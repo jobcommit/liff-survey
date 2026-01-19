@@ -1,146 +1,150 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>事前アンケート</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
-    <style>
-        body { background-color: #f5f5f5; min-height: 100vh; display: flex; align-items: center; }
-        .box { width: 100%; margin: 10px; border-radius: 8px; }
-        .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 1000; justify-content: center; align-items: center; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ジョブコミット事前アンケート</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    body { font-family: sans-serif; margin: 20px; background-color: #f8f9fa; }
+    .container { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    h2 { text-align: center; color: #333; }
+    .field { margin-bottom: 15px; }
+    label { display: block; font-weight: bold; margin-bottom: 5px; }
+    input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+    button { width: 100%; padding: 12px; background: #00b900; color: white; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; }
+    button:disabled { background: #ccc; }
+    #loading { display: none; text-align: center; margin-top: 10px; color: #666; }
+  </style>
 </head>
 <body>
-    <div id="loader" class="loading-overlay">送信中...</div>
 
-    <div class="container">
-        <div class="box">
-            <h1 class="title is-6 has-text-centered">事前アンケート</h1>
-            <form id="ansForm">
-                <input type="hidden" id="userIdField">
+<div class="container">
+  <h2>事前アンケート</h2>
+  <form id="survey-form">
+    <input type="hidden" id="userId" name="userId">
 
-                <div class="field">
-                    <label class="label">お名前</label>
-                    <input class="input" type="text" id="name" placeholder="山田 太郎" required>
-                </div>
-
-                <div class="field">
-                    <label class="label">フリガナ</label>
-                    <input class="input" type="text" id="furigana" placeholder="ヤマダ タロウ" required>
-                </div>
-
-                <div class="field">
-                    <label class="label">大学名</label>
-                    <input class="input" type="text" id="university" required>
-                </div>
-
-                <div class="columns is-mobile">
-                    <div class="column">
-                        <label class="label">学部</label>
-                        <input class="input" type="text" id="gakubu" required>
-                    </div>
-                    <div class="column">
-                        <label class="label">学科</label>
-                        <input class="input" type="text" id="gakka" required>
-                    </div>
-                </div>
-
-                <div class="field">
-                    <label class="label">メールアドレス</label>
-                    <input class="input" type="email" id="email" placeholder="example@mail.com" required>
-                </div>
-
-                <div class="field">
-                    <label class="label">電話番号</label>
-                    <input class="input" type="tel" id="tel" placeholder="09012345678" required>
-                </div>
-
-                <div class="field">
-                    <label class="label">卒業年</label>
-                    <div class="select is-fullwidth">
-                        <select id="sotsunen">
-                            <option value="2026">2026年卒</option>
-                            <option value="2027">2027年卒</option>
-                            <option value="2028">2028年卒</option>
-                        </select>
-                    </div>
-                </div>
-
-                <button type="submit" id="submitBtn" class="button is-success is-fullwidth mt-5">
-                    送信して日程調整へ
-                </button>
-            </form>
-        </div>
+    <div class="field">
+      <label>お名前</label>
+      <input type="text" id="name" required placeholder="山田 太郎">
     </div>
 
-    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-    <script>
-        // --- 設定箇所 ---
-        const LIFF_ID = "YOUR_LIFF_ID"; // LINE Developersで発行されたID
-        const GAS_URL = "YOUR_GAS_WEBAPP_URL"; // GASでデプロイしたURL
-        const REDIRECT_URL = "https://timerex.net/your-link"; // 送信後のリダイレクト先
-        // ----------------
+    <div class="field">
+      <label>フリガナ</label>
+      <input type="text" id="furigana" required placeholder="ヤマダ タロウ">
+    </div>
 
-        // 1. LIFFの初期化
-        document.addEventListener("DOMContentLoaded", function() {
-            liff.init({ liffId: LIFF_ID })
-                .then(() => {
-                    if (!liff.isLoggedIn()) {
-                        liff.login();
-                    } else {
-                        // ログイン済みならプロフィール取得
-                        liff.getProfile().then(profile => {
-                            document.getElementById('userIdField').value = profile.userId;
-                        });
-                    }
-                })
-                .catch((err) => {
-                    console.error("LIFF初期化失敗", err);
-                });
-        });
+    <div class="field">
+      <label>大学名</label>
+      <input type="text" id="university" required>
+    </div>
 
-        // 2. 送信処理
-        document.getElementById('ansForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const btn = document.getElementById('submitBtn');
-            const loader = document.getElementById('loader');
-            
-            btn.disabled = true;
-            btn.classList.add('is-loading');
-            loader.style.display = 'flex';
+    <div class="field">
+      <label>学部・学科</label>
+      <input type="text" id="gakubu" placeholder="経済学部" required style="width: 48%; display: inline-block;">
+      <input type="text" id="gakka" placeholder="経済学科" required style="width: 48%; display: inline-block; margin-left: 2%;">
+    </div>
 
-            const formData = {
-                userId: document.getElementById('userIdField').value,
-                name: document.getElementById('name').value,
-                furigana: document.getElementById('furigana').value,
-                university: document.getElementById('university').value,
-                gakubu: document.getElementById('gakubu').value,
-                gakka: document.getElementById('gakka').value,
-                email: document.getElementById('email').value,
-                tel: document.getElementById('tel').value,
-                sotsunen: document.getElementById('sotsunen').value
-            };
+    <div class="field">
+      <label>メールアドレス</label>
+      <input type="email" id="email" required>
+    </div>
 
-            // GASへデータを送信
-            fetch(GAS_URL, {
-                method: 'POST',
-                mode: 'no-cors', // CORSエラー回避
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            })
-            .then(() => {
-                // 送信完了後、日程調整サイトへリダイレクト
-                window.location.href = REDIRECT_URL;
-            })
-            .catch(err => {
-                alert('送信に失敗しました。通信環境を確認してください。');
-                btn.disabled = false;
-                btn.classList.remove('is-loading');
-                loader.style.display = 'none';
-            });
-        });
-    </script>
+    <div class="field">
+      <label>電話番号</label>
+      <input type="tel" id="tel" required>
+    </div>
+
+    <div class="field">
+      <label>卒業年</label>
+      <select id="sotsunen" required>
+        <option value="">選択してください</option>
+        <option value="2025">2025卒</option>
+        <option value="2026">2026卒</option>
+        <option value="2027">2027卒</option>
+        <option value="その他">その他</option>
+      </select>
+    </div>
+
+    <button type="button" id="submitBtn" onclick="handleSubmit()">回答を送信する</button>
+    <div id="loading">送信中...</div>
+  </form>
+</div>
+
+<script>
+  // ★重要：あなたのGASのウェブアプリURLをここに貼る
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbyLvdb_5nhEUzBZylreihxoOEQGDeJo7VjJmKg8cW1atbTcXaOFI02WzBjzFzPptV3B/exec"; 
+  // ★重要：あなたのLIFF ID（LINE Developersで作成）をここに貼る
+  const MY_LIFF_ID = "2008904530-lXx8C9i5"; 
+
+  // LIFFの初期化
+  window.onload = function() {
+    liff.init({ liffId: MY_LIFF_ID })
+      .then(() => {
+        if (!liff.isLoggedIn()) {
+          liff.login();
+        } else {
+          // ログイン済みならユーザーIDを取得して隠しフィールドに入れる
+          const context = liff.getContext();
+          if (context && context.userId) {
+            document.getElementById('userId').value = context.userId;
+          }
+        }
+      })
+      .catch((err) => { console.error("LIFF初期化失敗", err); });
+  };
+
+  // 送信処理
+  async function handleSubmit() {
+    const submitBtn = document.getElementById('submitBtn');
+    const loading = document.getElementById('loading');
+    
+    // 入力チェック（簡易版）
+    const name = document.getElementById('name').value;
+    if (!name) { alert("お名前を入力してください"); return; }
+
+    submitBtn.disabled = true;
+    loading.style.display = "block";
+
+    const data = {
+      userId: document.getElementById('userId').value,
+      name: name,
+      furigana: document.getElementById('furigana').value,
+      university: document.getElementById('university').value,
+      gakubu: document.getElementById('gakubu').value,
+      gakka: document.getElementById('gakka').value,
+      email: document.getElementById('email').value,
+      tel: document.getElementById('tel').value,
+      sotsunen: document.getElementById('sotsunen').value
+    };
+
+    try {
+      // GASへ送信
+      await fetch(GAS_URL, {
+        method: "POST",
+        mode: "no-cors", // GASへのPOSTはこの設定が必要
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      });
+
+      // LINEトーク画面にメッセージを送る
+      // これにより、GAS側の doPost 内の「アンケートの回答を送信しました」判定が動く
+      await liff.sendMessages([{
+        type: 'text',
+        text: 'アンケートの回答を送信しました'
+      }]);
+
+      alert("送信完了しました！");
+      liff.closeWindow();
+
+    } catch (error) {
+      console.error(error);
+      alert("エラーが発生しました。もう一度お試しください。");
+      submitBtn.disabled = false;
+      loading.style.display = "none";
+    }
+  }
+</script>
+
 </body>
 </html>
