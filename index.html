@@ -5,112 +5,97 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ジョブコミット事前アンケート</title>
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
-  <style>
-    /* 全体の背景：画像のような明るいグレーがかった水色 */
-    body { 
-      font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif; 
-      margin: 0; 
-      padding: 20px 15px;
-      background-color: #f0f4f7; 
-      color: #333;
-    }
+ <style>
+  /* 全体の背景：画像の背景色に近い、透明感のある薄い水色に変更 */
+  body { 
+    font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif; 
+    margin: 0; 
+    padding: 20px 15px;
+    background-color: #e6f2ff; /* 薄い水色 */
+    color: #333;
+  }
 
-    /* コンテナ：画像のバナーの雰囲気に合わせ白ベース */
-    .container { 
-      max-width: 450px; 
-      margin: auto; 
-      background: #ffffff; 
-      padding: 30px 20px; 
-      border-radius: 15px; 
-      box-shadow: 0 8px 24px rgba(0,0,0,0.08); 
-    }
+  /* 入力エリアの箱：白背景にすることで清潔感を強調 */
+  .container { 
+    max-width: 450px; 
+    margin: auto; 
+    background: #ffffff; 
+    padding: 30px 20px; 
+    border-radius: 16px; 
+    box-shadow: 0 10px 25px rgba(0, 86, 210, 0.1); /* 影にも少し青みを混ぜて馴染ませる */
+  }
 
-    /* タイトル：誠実さを出すネイビー系 */
-    h2 { 
-      text-align: center; 
-      color: #004bb1; 
-      margin-top: 0;
-      margin-bottom: 25px; 
-      font-size: 1.4rem;
-      letter-spacing: 0.05em;
-    }
+  /* タイトル：画像のテキストと同じ濃いめのブルー */
+  h2 { 
+    text-align: center; 
+    color: #0056d2; 
+    margin-top: 0;
+    margin-bottom: 25px; 
+    font-size: 1.4rem;
+    font-weight: bold;
+  }
 
-    .field { margin-bottom: 20px; }
+  .field { margin-bottom: 20px; }
 
-    /* ラベル：視認性を高める */
-    label { 
-      display: block; 
-      font-weight: 600; 
-      margin-bottom: 8px; 
-      color: #444; 
-      font-size: 0.95rem;
-    }
+  label { 
+    display: block; 
+    font-weight: 600; 
+    margin-bottom: 8px; 
+    color: #444; 
+    font-size: 0.95rem;
+  }
 
-    /* 入力フォーム：フォーカス時に青く光るように設定 */
-    input, select { 
-      width: 100%; 
-      padding: 14px; 
-      border: 1.5px solid #e0e0e0; 
-      border-radius: 8px; 
-      box-sizing: border-box; 
-      font-size: 16px; 
-      transition: border-color 0.2s;
-      background-color: #fafafa;
-    }
+  /* 入力フォーム：枠線を少し青みのあるグレーに */
+  input, select { 
+    width: 100%; 
+    padding: 14px; 
+    border: 1px solid #c2d1e5; 
+    border-radius: 8px; 
+    box-sizing: border-box; 
+    font-size: 16px; 
+    background-color: #fdfdfd;
+  }
 
-    input:focus, select:focus {
-      outline: none;
-      border-color: #0056d2;
-      background-color: #fff;
-    }
+  input:focus, select:focus {
+    outline: none;
+    border-color: #0056d2;
+    background-color: #fff;
+    box-shadow: 0 0 0 3px rgba(0, 86, 210, 0.1);
+  }
 
-    /* 学部・学科の横並び調整 */
-    .field-group {
-      display: flex; 
-      gap: 10px;
-    }
+  /* 送信ボタン：画像の青色を再現 */
+  button { 
+    width: 100%; 
+    padding: 16px; 
+    background: #0056d2; 
+    color: white; 
+    border: none; 
+    border-radius: 30px; /* 画像のボタンに合わせ、より丸みを帯びたデザインに */
+    font-size: 17px; 
+    font-weight: bold; 
+    cursor: pointer; 
+    margin-top: 15px; 
+    transition: all 0.3s ease;
+  }
 
-    /* 送信ボタン：画像の「友だち追加」ボタンを再現 */
-    button { 
-      width: 100%; 
-      padding: 16px; 
-      background: #0056d2; /* ジョブコミットのブランドカラーに合わせた青 */
-      color: white; 
-      border: none; 
-      border-radius: 8px; 
-      font-size: 17px; 
-      font-weight: bold; 
-      cursor: pointer; 
-      margin-top: 15px; 
-      box-shadow: 0 4px 0 #003d96; /* 立体感 */
-      transition: all 0.2s;
-    }
+  button:active {
+    background: #003d96;
+    transform: scale(0.98);
+  }
 
-    button:active {
-      transform: translateY(2px);
-      box-shadow: 0 2px 0 #003d96;
-    }
+  button:disabled { 
+    background: #ccc; 
+    cursor: not-allowed; 
+  }
 
-    button:disabled { 
-      background: #b0c4de; 
-      box-shadow: none;
-      cursor: not-allowed; 
-    }
-
-    #loading { 
-      display: none; 
-      text-align: center; 
-      margin-top: 20px; 
-      color: #0056d2; 
-      font-weight: bold; 
-      font-size: 0.9rem;
-    }
-
-    /* プレースホルダーの色 */
-    ::placeholder {
-      color: #bbb;
-    }
-  </style>
+  #loading { 
+    display: none; 
+    text-align: center; 
+    margin-top: 20px; 
+    color: #0056d2; 
+    font-weight: bold; 
+  }
+</style>
 </head>
 <body>
 
