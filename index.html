@@ -162,28 +162,20 @@
   const MY_LIFF_ID = "2008904530-lXx8C9i5"; 
 
   // LIFF初期化
-  window.onload = function() {
-    liff.init({ liffId: MY_LIFF_ID })
-      .then(() => {
-        if (!liff.isLoggedIn()) {
-          liff.login();
-        } else {
-          const context = liff.getContext();
-          if (context && context.userId) {
-            document.getElementById('userId').value = context.userId;
-
-            // ★追加：開いた瞬間に「アンケートを開始します」とユーザーに喋らせる
-            // 稼働中なので、既存の送信完了メッセージ「アンケートの回答を送信しました」とは
-            // 別の文言にして、GAS側が誤作動しないようにしています。
-            liff.sendMessages([{
-              type: 'text',
-              text: 'アンケート回答を開始'
-            }]).catch(err => console.error("開始メッセージ送信失敗", err));
-          }
-        }
-      })
-      .catch((err) => { console.error("LIFF初期化失敗", err); });
-  };
+  window.onload = function() {
+    liff.init({ liffId: MY_LIFF_ID })
+      .then(() => {
+        if (!liff.isLoggedIn()) {
+          liff.login();
+        } else {
+          const context = liff.getContext();
+          if (context && context.userId) {
+            document.getElementById('userId').value = context.userId;
+          }
+        }
+      })
+      .catch((err) => { console.error("LIFF初期化失敗", err); });
+  };
 
   // 送信ボタンクリック時の処理
   async function handleSubmit() {
@@ -240,3 +232,5 @@
 
 </body>
 </html>
+
+
